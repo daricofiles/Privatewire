@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WireGuard Panel Spain - Galactic</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+
+body {
+  margin:0; padding:0; font-family:'Orbitron',sans-serif;
+  background:#0b0b1e; color:#fff; overflow:hidden;
+}
+
+canvas {
+  position:fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+}
+
+.container {
+  position:relative;
+  z-index:1;
+  max-width:600px;
+  margin:50px auto;
+  background:rgba(0,0,0,0.6);
+  padding:30px;
+  border-radius:20px;
+  box-shadow:0 0 50px #6b5bff;
+}
+
+h1 {
+  text-align:center;
+  color:#6b5bff;
+  margin-bottom:30px;
+}
+
+input, textarea {
+  width:100%;
+  margin:10px 0;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:rgba(20,20,40,0.8);
+  color:#0ff;
+  font-size:16px;
+}
+
+button {
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:10px;
+  background:#6b5bff;
+  color:#fff;
+  font-size:16px;
+  cursor:pointer;
+  margin-top:10px;
+  transition:0.3s;
+}
+
+button:hover {
+  background:#0ff;
+  color:#000;
+}
+</style>
+</head>
+<body>
+
+<canvas id="galaxy"></canvas>
+
+<div class="container">
+  <h1>WireGuard Panel Spain</h1>
+  <input type="text" id="name" placeholder="اسم کانفینگ">
+  <input type="text" id="gig" placeholder="حجم (گیگ)">
+  <input type="text" id="days" placeholder="تعداد روز">
+  <input type="text" id="users" placeholder="تعداد کاربر">
+  <button onclick="downloadConfig()">دانلود کانفینگ</button>
+  <textarea id="output" readonly placeholder="کانفینگ شما اینجا نمایش داده می‌شود..."></textarea>
+</div>
+
+<script>
+// Canvas Galaxy
+const canvas = document.getElementById('galaxy');
+const ctx = canvas.getContext('2d');
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+
+// ستاره ها
+let stars = [];
+for(let i=0;i<200;i++){
+  stars.push({
+    x:Math.random()*width,
+    y:Math.random()*height,
+    r:Math.random()*2 + 0.5,
+    dx:(Math.random()-0.5)*0.4,
+    dy:(Math.random()-0.5)*0.4
+  });
+}
+
+// زمین و ماه ساده
+let earth = {x:width*0.2, y:height*0.7, r:60};
+let moon = {x:width*0.8, y:height*0.3, r:30};
+
+function animate(){
+  // پس زمینه کهکشانی
+  let gradient = ctx.createRadialGradient(width/2,height/2,width/4,width/2,height/2,width);
+  gradient.addColorStop(0,'#0b0b1e');
+  gradient.addColorStop(0.5,'#2b1a3f');
+  gradient.addColorStop(1,'#0b0b1e');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0,0,width,height);
+
+  // ستاره ها
+  for(let s of stars){
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle="#fff";
+    ctx.fill();
+    s.x += s.dx;
+    s.y += s.dy;
+    if(s.x<0) s.x=width;
+    if(s.x>width) s.x=0;
+    if(s.y<0) s.y=height;
+    if(s.y>height) s.y=0;
+  }
+
+  // زمین
+  ctx.beginPath();
+  ctx.arc(earth.x,earth.y,earth.r,0,Math.PI*2);
+  let earthGrad = ctx.createRadialGradient(earth.x,earth.y,0,earth.x,earth.y,earth.r);
+  earthGrad.addColorStop(0,'#3b80ff');
+  earthGrad.addColorStop(1,'#0b0b1e');
+  ctx.fillStyle = earthGrad;
+  ctx.fill();
+
+  // ماه
+  ctx.beginPath();
+  ctx.arc(moon.x,moon.y,moon.r,0,Math.PI*2);
+  let moonGrad = ctx.createRadialGradient(moon.x,moon.y,0,moon.x,moon.y,moon.r);
+  moonGrad.addColorStop(0,'#cccccc');
+  moonGrad.addColorStop(1,'#0b0b1e');
+  ctx.fillStyle = moonGrad;
+  ctx.fill();
+
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+});
+
+// IPv4 اسپانیا
+const ipv4 = [
+"1.178.224.0/19","2.56.64.0/22","2.57.2.0/24","2.57.4.0/22","2.57.100.0/22",
+"2.57.108.0/22","2.57.128.0/22","2.57.192.0/22","2.57.224.0/22","2.58.64.0/22",
+"2.58.188.0/22","2.58.215.0/24","2.58.224.0/22","2.59.92.0/22","2.59.108.0/22",
+"2.59.112.0/22","2.59.124.0/22","2.59.192.0/22","2.59.232.0/22","2.59.244.0/22",
+"2.136.0.0/13","2.152.0.0/14","5.1.32.0/21","5.2.24.0/21","5.2.88.0/21"
+];
+
+// IPv6 اسپانیا
+const ipv6 = [
+"2001:720::/29","2001:a50::/32","2001:ac0::/29","2001:b90::/32","2001:ba0::/32",
+"2001:1498::/32","2001:1a58::/32","2001:31c0::/29","2001:4030::/32","2001:40b0::/32",
+"2001:4108::/32","2001:4c60::/32","2001:4d10::/32","2a00:d60::/32","2a00:e70::/32",
+"2a00:1508::/32","2a00:1660::/32","2a00:1af0::/29","2a00:1d70::/29","2a00:4560::/32",
+"2a00:4920::/29","2a00:4b80::/32","2a00:4f20::/32","2a00:4fe0::/29","2a00:5ac0::/32",
+"2a00:5c00::/32","2a00:6640::/29","2a00:6860::/29","2a00:6940::/32","2a00:69e0::/32",
+"2a00:6ac0::/32"
+];
+
+function downloadConfig(){
+  const name = document.getElementById('name').value || "WGConfig";
+  const gig = document.getElementById('gig').value || "0";
+  const days = document.getElementById('days').value || "0";
+  const users = document.getElementById('users').value || "0";
+
+  let content = `# WireGuard Config: ${name}\n# حجم: ${gig} گیگ\n# روز: ${days}\n# کاربر: ${users}\n\n`;
+
+  content += `[Interface]
+PrivateKey = AOlJZ/7TAORBoZJpJU0dQUgM2SBKgG625Fap8H7Jl1Y=
+Address = 10.0.0.2/32
+DNS = 1.1.1.1
+
+`;
+
+  content += `[Peer]
+PublicKey = 3n+FpJtxc6fpSjEYI0AWSHH+A0W6Zd8W7eFg26UTTyM=
+Endpoint = yourserver.com:51820
+PersistentKeepalive = 25
+AllowedIPs = ${ipv4.concat(ipv6).join(",")}
+
+`;
+
+  document.getElementById('output').value = content;
+
+  const blob = new Blob([content], {type: "text/plain"});
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${name}.conf`;
+  link.click();
+}
+</script>
+</body>
+</html>
